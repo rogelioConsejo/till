@@ -1,11 +1,18 @@
 @import "../global-styles/_colors";
 
 #addition {
-
+  background: $black;
+  position: relative;
+  width: auto;
 
   ul {
+    border: 3px solid $white;
     position: sticky;
+    top: 0;
+    width: auto;
     list-style-type: none;
+    padding: 0;
+    margin: 0;
 
     > *:nth-child(even) {
       background: $light-gray
@@ -17,7 +24,8 @@
 
     li {
       text-align: right;
-      padding-right: 10px;
+      padding-left: 2vw;
+      padding-right: 1vw;
     }
   }
 

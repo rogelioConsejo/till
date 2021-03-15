@@ -15,7 +15,6 @@ function Addition(props) {
 
     return (
         <div id="addition">
-            <h2>Addition</h2>
             <ul>
                 {itemsList}
                 <li>TOTAL: ${addition.toFixed(2)}</li>

@@ -34,13 +34,13 @@ func (p *MockPersistence) Sale(id string) (sale Sale, err error)  {
 }
 
 func TestSalesLogger(t *testing.T) {
-	salesLogger, saleId, err := testLogSale(t)
+	t.Log("Creating sales log with mocked persistence")
+	salesLogger := SalesLog(new(MockPersistence))
 
+	loggedSaleID, err := testLogSale(t, salesLogger)
 	if noError(err) {
-		err = testRetrieveSales(t, salesLogger)
-	}
-	if noError(err) {
-		testRetrieveOneSale(t, salesLogger, saleId)
+		testRetrieveSales(t, salesLogger)
+		testRetrieveOneSale(t, salesLogger, loggedSaleID)
 	}
 }
 
@@ -54,7 +54,7 @@ func testRetrieveOneSale(t *testing.T, salesLogger *Logger, id string) {
 	}
 	return
 }
-func testRetrieveSales(t *testing.T, salesLogger *Logger) error {
+func testRetrieveSales(t *testing.T, salesLogger *Logger) {
 	t.Log("Testing: retrieve sales")
 	sales, err := salesLogger.Sales()
 	if err != nil {
@@ -66,18 +66,18 @@ func testRetrieveSales(t *testing.T, salesLogger *Logger) error {
 			t.Error(errors.New("mockItems do not correspond to logged sale"))
 		}
 	}
-	return err
+	return
 }
-func testLogSale(t *testing.T) (salesLogger *Logger, id string, err error) {
+func testLogSale(t *testing.T, salesLogger *Logger) (id string, err error) {
 	mockItems := createMockItems()
-	mockSalesLogger := SalesLog(new(MockPersistence))
+
 
 	t.Log("Testing: logging a sale")
-	id, err = logNewSale(mockItems, mockSalesLogger)
+	id, err = logNewSale(mockItems, salesLogger)
 	if err != nil {
-		t.Error(err)
+		t.Error(err.Error())
 	}
-	return mockSalesLogger, id, err
+	return id, err
 }
 
 func noError(err error) bool {

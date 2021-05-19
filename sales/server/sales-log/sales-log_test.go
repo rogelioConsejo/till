@@ -2,53 +2,96 @@ package sales_log
 
 import (
 	"errors"
+	"fmt"
+	"strconv"
 	"testing"
 )
 
+const price1 = 1
+const name1 = "product 1"
+const price2 = 2
+const name2 = "product 2"
 
 type MockPersistence struct {
 	data []Sale
 }
-
-func (p *MockPersistence) Save(sale Sale) error {
+func (p *MockPersistence) Save(sale Sale) (id string, err error) {
 	p.data = append(p.data, sale)
-	return nil
+	return fmt.Sprintf("%d",len(p.data)-1), nil
 }
-
-func (p MockPersistence) Sales() (sales []Sale, err error) {
+func (p *MockPersistence) Sales() (sales []Sale, err error) {
 	return p.data, nil
 }
+func (p *MockPersistence) Sale(id string) (sale Sale, err error)  {
+	idInt, err := strconv.ParseInt(id, 10, 32)
 
-func TestLogSale(t *testing.T) {
-	const price1 = 1
-	const name1 = "product 1"
-	const price2 = 2
-	const name2 = "product 2"
-
-	items := createMockItems(price1, name1, price2, name2)
-
-	salesLogger := SalesLog(new(MockPersistence))
-	sale := NewSale(items)
-
-	err := salesLogger.Log(sale)
-	if err != nil {
-		t.Error(err)
+	if int(idInt) >= len(p.data) || idInt < 0 {
+		err = errors.New("sale not found")
+	} else {
+		sale = p.data[int(idInt)]
 	}
+	return sale, err
+}
 
-	sales, err := salesLogger.persistence.Sales()
+func TestSalesLogger(t *testing.T) {
+	mockSalesLogger, saleId, err := testLogSale(t)
 
+	if noError(err) {
+		err = testRetrieveSales(t, mockSalesLogger)
+	}
+	if noError(err) {
+		testRetrieveOneSale(t, mockSalesLogger, saleId)
+	}
+}
+
+func testRetrieveOneSale(t *testing.T, salesLogger *Logger, id string) {
+	t.Log("Testing: retrieve one sale")
+	sale, err := salesLogger.Sale(id)
+	if errorExists(err) {
+		t.Errorf("error retrieving one sale: %s", err.Error())
+	} else {
+		t.Log(fmt.Sprintf("Retrieved sale: %+v", sale))
+	}
+	return
+}
+func testRetrieveSales(t *testing.T, mockSalesLogger *Logger) error {
+	t.Log("Testing: retrieve sales")
+	sales, err := mockSalesLogger.Sales()
 	if err != nil {
 		t.Error(err)
 	} else if len(sales) != 1 {
 		t.Error(errors.New("sales do not correspond to logged sale"))
 	} else {
 		if len(sales[0].items) != 2 {
-			t.Error(errors.New("items do not correspond to logged sale"))
+			t.Error(errors.New("mockItems do not correspond to logged sale"))
 		}
 	}
+	return err
+}
+func testLogSale(t *testing.T) (salesLogger *Logger, id string, err error) {
+	mockItems := createMockItems()
+	mockSalesLogger := SalesLog(new(MockPersistence))
+
+	t.Log("Testing: logging a sale")
+	id, err = logNewSale(mockItems, mockSalesLogger)
+	if err != nil {
+		t.Error(err)
+	}
+	return mockSalesLogger, id, err
 }
 
-func createMockItems(price1 int, name1 string, price2 int, name2 string) []Item {
+func noError(err error) bool {
+	return err == nil
+}
+func errorExists(err error) bool {
+	return err != nil
+}
+
+func logNewSale(items []Item, salesLogger *Logger) (id string, err error) {
+	sale := NewSale(items)
+	return salesLogger.Log(sale)
+}
+func createMockItems() []Item {
 	item1 := new(Item)
 	item1.name = name1
 	item1.price = price1

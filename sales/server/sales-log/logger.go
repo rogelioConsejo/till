@@ -10,6 +10,14 @@ func SalesLog(persistence Persistence) *Logger {
 	return logger
 }
 
-func (l *Logger) Log(sale *Sale) error {
+func (l *Logger) Log(sale *Sale) (id string, err error) {
 	return l.persistence.Save(*sale)
+}
+
+func (l *Logger) Sales() ([]Sale, error) {
+	return l.persistence.Sales()
+}
+
+func (l *Logger) Sale(id string) (Sale, error) {
+	return l.persistence.Sale(id)
 }

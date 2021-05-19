@@ -10,6 +10,14 @@ type SaleSaver interface {
 }
 
 type SalesRetriever interface {
+	MultipleSalesRetriever
+	SingleSaleRetriever
+}
+
+type MultipleSalesRetriever interface {
 	Sales() ([]Sale, error)
+}
+
+type SingleSaleRetriever interface {
 	Sale(id string) (Sale, error)
 }

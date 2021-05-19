@@ -34,13 +34,13 @@ func (p *MockPersistence) Sale(id string) (sale Sale, err error)  {
 }
 
 func TestSalesLogger(t *testing.T) {
-	mockSalesLogger, saleId, err := testLogSale(t)
+	salesLogger, saleId, err := testLogSale(t)
 
 	if noError(err) {
-		err = testRetrieveSales(t, mockSalesLogger)
+		err = testRetrieveSales(t, salesLogger)
 	}
 	if noError(err) {
-		testRetrieveOneSale(t, mockSalesLogger, saleId)
+		testRetrieveOneSale(t, salesLogger, saleId)
 	}
 }
 
@@ -54,9 +54,9 @@ func testRetrieveOneSale(t *testing.T, salesLogger *Logger, id string) {
 	}
 	return
 }
-func testRetrieveSales(t *testing.T, mockSalesLogger *Logger) error {
+func testRetrieveSales(t *testing.T, salesLogger *Logger) error {
 	t.Log("Testing: retrieve sales")
-	sales, err := mockSalesLogger.Sales()
+	sales, err := salesLogger.Sales()
 	if err != nil {
 		t.Error(err)
 	} else if len(sales) != 1 {
